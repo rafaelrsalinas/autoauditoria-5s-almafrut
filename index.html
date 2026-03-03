@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoauditoría 5S — Almafrut</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .btn-si.selected { background-color: #22c55e; color: #fff; border-color: #22c55e; }
+        .btn-no.selected { background-color: #ef4444; color: #fff; border-color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <div id="formView">
+        <header class="bg-blue-700 text-white p-4 sticky top-0 z-10">
+            <h1 class="text-lg font-bold text-center">Autoauditoría 5S</h1>
+        </header>
+
+        <form id="auditForm" class="max-w-2xl mx-auto p-4 space-y-6 pb-8">
+
+            <section class="bg-white rounded-lg shadow p-4 space-y-4">
+                <h2 class="font-bold text-blue-700 text-lg">Datos generales</h2>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Zona</label>
+                    <select id="zona" class="w-full border rounded-lg p-2" required>
+                        <option value="">Selecciona zona...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Responsable de área</label>
+                    <input type="text" id="responsable" class="w-full border rounded-lg p-2 bg-gray-100" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                    <input type="text" id="empresa" class="w-full border rounded-lg p-2 bg-gray-100" readonly>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Mes</label>
+                        <select id="mes" class="w-full border rounded-lg p-2"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                        <select id="anio" class="w-full border rounded-lg p-2"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                    <input type="date" id="fecha" class="w-full border rounded-lg p-2" required>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow p-4 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-blue-700 text-lg">Verificación rápida</h2>
+                    <span class="text-sm font-medium text-gray-500" id="contadorSi">0 de 6 cumplidas</span>
+                </div>
+                <div id="preguntasContainer" class="space-y-4"></div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow p-4 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-blue-700 text-lg">Acciones abiertas</h2>
+                    <button type="button" id="btnAddAccion" class="bg-blue-600 text-white text-sm px-3 py-1 rounded-lg">+ Añadir</button>
+                </div>
+                <div id="accionesContainer" class="space-y-4"></div>
+                <p id="noAcciones" class="text-gray-400 text-sm text-center">Sin acciones registradas</p>
+            </section>
+
+            <section class="bg-white rounded-lg shadow p-4">
+                <h2 class="font-bold text-blue-700 text-lg mb-2">Observaciones</h2>
+                <textarea id="observaciones" class="w-full border rounded-lg p-2" rows="3" placeholder="Observaciones generales (opcional)"></textarea>
+            </section>
+
+            <button type="submit" id="btnEnviar" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Enviar Autoauditoría
+            </button>
+        </form>
+    </div>
+
+    <div id="sendingView" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 text-center space-y-4 mx-4">
+            <div class="animate-spin h-10 w-10 border-4 border-blue-700 border-t-transparent rounded-full mx-auto"></div>
+            <p class="text-lg font-medium">Enviando autoauditoría...</p>
+        </div>
+    </div>
+
+    <div id="successView" class="hidden min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-lg p-8 text-center space-y-4 max-w-md w-full">
+            <div class="text-green-500 text-5xl">&#10003;</div>
+            <h2 class="text-xl font-bold text-green-700">Autoauditoría enviada correctamente</h2>
+            <div id="successDetails" class="text-gray-600 text-sm space-y-1"></div>
+            <button type="button" onclick="location.reload()" class="bg-blue-700 text-white font-bold py-3 px-6 rounded-lg mt-4">
+                Nueva autoauditoría
+            </button>
+        </div>
+    </div>
+
+    <div id="errorView" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-8 text-center space-y-4 max-w-sm w-full">
+            <div class="text-red-500 text-5xl">&#10007;</div>
+            <h2 class="text-xl font-bold text-red-700">Error al enviar</h2>
+            <p class="text-gray-600 text-sm">Comprueba tu conexión e inténtalo de nuevo.</p>
+            <button type="button" id="btnReintentar" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg">Reintentar</button>
+            <button type="button" id="btnVolverForm" class="w-full text-gray-500 py-2 text-sm">Volver al formulario</button>
+        </div>
+    </div>
+
+<script>
+const CONFIG = { endpoint: "[PENDIENTE]" };
+
+const ZONAS = [
+  { zona: "Nave de cartón", responsable: "Juan Baena", empresa: "ALMAFRUT" },
+  { zona: "Almacén envase y embalaje", responsable: "Alberto Rodríguez", empresa: "ALMAFRUT" },
+  { zona: "Oficina Almafrut", responsable: "Enrique Rodríguez", empresa: "ALMAFRUT" },
+  { zona: "Almacén recambios CERYS", responsable: "Sergio Doucet", empresa: "CERYS" },
+  { zona: "Taller CERYS", responsable: "Ramón Mirón", empresa: "CERYS" },
+  { zona: "Furgonetas CERYS", responsable: "Rotativo Mecánicos", empresa: "CERYS" },
+  { zona: "Boxes CERYS", responsable: "Sergio Bueno", empresa: "CERYS" },
+  { zona: "Oficinas INGRO", responsable: "Javier López", empresa: "INGRO" },
+  { zona: "Taller INGRO", responsable: "Carlos Moya", empresa: "INGRO" },
+  { zona: "Almacén recambios INGRO", responsable: "David", empresa: "INGRO" }
+];
+
+const PREGUNTAS = [
+  { texto: "¿La zona está libre de materiales innecesarios u obsoletos?", s: "ELIMINAR" },
+  { texto: "¿Las herramientas y materiales están en sus ubicaciones designadas?", s: "ORDENAR" },
+  { texto: "¿Los suelos y superficies están limpios sin acumulación de residuos?", s: "LIMPIAR" },
+  { texto: "¿Los estándares visuales (etiquetas, señalización) están actualizados?", s: "ESTANDARIZAR" },
+  { texto: "¿La pizarra 5S está actualizada con las acciones actuales?", s: "ESTANDARIZAR" },
+  { texto: "¿Se están cumpliendo las prácticas 5S de forma consistente?", s: "DISCIPLINA" }
+];
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const respuestas = [null, null, null, null, null, null];
+let accionCount = 0;
+let lastPayload = null;
+
+function init() {
+    initZonas();
+    initFecha();
+    initMesAnio();
+    renderPreguntas();
+    document.getElementById("btnAddAccion").addEventListener("click", addAccion);
+    document.getElementById("auditForm").addEventListener("submit", handleSubmit);
+    document.getElementById("btnReintentar").addEventListener("click", retrySend);
+    document.getElementById("btnVolverForm").addEventListener("click", () => setState("form"));
+}
+
+function initZonas() {
+    const sel = document.getElementById("zona");
+    ZONAS.forEach((z, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = z.zona;
+        sel.appendChild(opt);
+    });
+    sel.addEventListener("change", () => {
+        if (sel.value === "") {
+            document.getElementById("responsable").value = "";
+            document.getElementById("empresa").value = "";
+        } else {
+            const z = ZONAS[parseInt(sel.value)];
+            document.getElementById("responsable").value = z.responsable;
+            document.getElementById("empresa").value = z.empresa;
+        }
+        validateForm();
+    });
+}
+
+function initFecha() {
+    document.getElementById("fecha").value = new Date().toISOString().split("T")[0];
+}
+
+function initMesAnio() {
+    const now = new Date();
+    const mesSel = document.getElementById("mes");
+    MESES.forEach((m, i) => {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = m;
+        if (i === now.getMonth()) opt.selected = true;
+        mesSel.appendChild(opt);
+    });
+
+    const anioSel = document.getElementById("anio");
+    for (let y = 2026; y <= 2030; y++) {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        if (y === now.getFullYear()) opt.selected = true;
+        anioSel.appendChild(opt);
+    }
+}
+
+function renderPreguntas() {
+    const container = document.getElementById("preguntasContainer");
+    PREGUNTAS.forEach((p, i) => {
+        const idx = i + 1;
+        const div = document.createElement("div");
+        div.className = "border rounded-lg p-3 space-y-2";
+        div.innerHTML =
+            '<div class="flex items-start justify-between gap-2">' +
+                '<p class="text-sm text-gray-800 flex-1">' + idx + '. ' + escapeHtml(p.texto) + '</p>' +
+                '<span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded whitespace-nowrap">' + p.s + '</span>' +
+            '</div>' +
+            '<div class="flex gap-2">' +
+                '<button type="button" class="btn-si flex-1 border-2 border-gray-300 rounded-lg py-2 text-sm font-bold transition-colors" data-idx="' + i + '">Sí</button>' +
+                '<button type="button" class="btn-no flex-1 border-2 border-gray-300 rounded-lg py-2 text-sm font-bold transition-colors" data-idx="' + i + '">No</button>' +
+            '</div>' +
+            '<input type="text" class="w-full border rounded p-1.5 text-sm pregunta-obs" data-idx="' + i + '" placeholder="Observación (opcional)">';
+        container.appendChild(div);
+    });
+
+    container.addEventListener("click", (e) => {
+        const btn = e.target.closest(".btn-si, .btn-no");
+        if (!btn) return;
+        const idx = parseInt(btn.dataset.idx);
+        const isSi = btn.classList.contains("btn-si");
+        respuestas[idx] = isSi;
+
+        const parent = btn.parentElement;
+        parent.querySelector(".btn-si").className = "btn-si flex-1 border-2 border-gray-300 rounded-lg py-2 text-sm font-bold transition-colors" + (isSi ? " selected" : "");
+        parent.querySelector(".btn-no").className = "btn-no flex-1 border-2 border-gray-300 rounded-lg py-2 text-sm font-bold transition-colors" + (!isSi ? " selected" : "");
+
+        updateContador();
+        validateForm();
+    });
+}
+
+function updateContador() {
+    const numSi = respuestas.filter(r => r === true).length;
+    document.getElementById("contadorSi").textContent = numSi + " de 6 cumplidas";
+}
+
+function addAccion() {
+    if (accionCount >= 10) return;
+    accionCount++;
+    document.getElementById("noAcciones").classList.add("hidden");
+
+    const container = document.getElementById("accionesContainer");
+    const div = document.createElement("div");
+    div.className = "border rounded-lg p-3 space-y-3 accion-block";
+    div.innerHTML =
+        '<div class="flex items-center justify-between">' +
+            '<span class="font-medium text-sm accion-label">Acción ' + accionCount + '</span>' +
+            '<button type="button" class="text-red-500 text-sm btn-remove">Eliminar</button>' +
+        '</div>' +
+        '<div>' +
+            '<label class="block text-sm text-gray-600 mb-1">Descripción</label>' +
+            '<input type="text" class="w-full border rounded-lg p-2 accion-desc" placeholder="Descripción de la acción">' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+            '<div>' +
+                '<label class="block text-sm text-gray-600 mb-1">Responsable</label>' +
+                '<input type="text" class="w-full border rounded-lg p-2 accion-resp" placeholder="Nombre">' +
+            '</div>' +
+            '<div>' +
+                '<label class="block text-sm text-gray-600 mb-1">Fecha límite</label>' +
+                '<input type="date" class="w-full border rounded-lg p-2 accion-fecha">' +
+            '</div>' +
+        '</div>' +
+        '<div>' +
+            '<label class="block text-sm text-gray-600 mb-1">Estado</label>' +
+            '<select class="w-full border rounded-lg p-2 accion-estado">' +
+                '<option value="Abierta">Abierta</option>' +
+                '<option value="En progreso">En progreso</option>' +
+                '<option value="Cerrada">Cerrada</option>' +
+            '</select>' +
+        '</div>';
+
+    container.appendChild(div);
+
+    div.querySelector(".btn-remove").addEventListener("click", () => {
+        div.remove();
+        accionCount--;
+        renumberAcciones();
+        if (accionCount === 0) document.getElementById("noAcciones").classList.remove("hidden");
+        if (accionCount < 10) document.getElementById("btnAddAccion").disabled = false;
+        validateForm();
+    });
+
+    div.querySelectorAll("input, select").forEach(el => el.addEventListener("input", validateForm));
+
+    if (accionCount >= 10) document.getElementById("btnAddAccion").disabled = true;
+    validateForm();
+}
+
+function renumberAcciones() {
+    document.querySelectorAll(".accion-block").forEach((block, i) => {
+        block.querySelector(".accion-label").textContent = "Acción " + (i + 1);
+    });
+}
+
+function validateForm() {
+    const zona = document.getElementById("zona").value;
+    const allAnswered = respuestas.every(r => r !== null);
+
+    let accionesOk = true;
+    document.querySelectorAll(".accion-block").forEach(block => {
+        if (!block.querySelector(".accion-desc").value.trim()) accionesOk = false;
+        if (!block.querySelector(".accion-fecha").value) accionesOk = false;
+    });
+
+    document.getElementById("btnEnviar").disabled = !(zona !== "" && allAnswered && accionesOk);
+}
+
+function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+function buildPayload() {
+    const zi = parseInt(document.getElementById("zona").value);
+    const z = ZONAS[zi];
+    const mesIdx = parseInt(document.getElementById("mes").value);
+
+    const payload = {
+        fecha: document.getElementById("fecha").value,
+        mes: MESES[mesIdx],
+        anio: parseInt(document.getElementById("anio").value),
+        zona: z.zona,
+        responsableArea: z.responsable,
+        empresa: z.empresa
+    };
+
+    let numSi = 0;
+    PREGUNTAS.forEach((_, i) => {
+        const idx = i + 1;
+        payload["p" + idx + "_respuesta"] = respuestas[i] ? "Sí" : "No";
+        payload["p" + idx + "_obs"] = document.querySelector('.pregunta-obs[data-idx="' + i + '"]').value.trim();
+        if (respuestas[i]) numSi++;
+    });
+    payload.numSi = numSi;
+
+    const acciones = [];
+    document.querySelectorAll(".accion-block").forEach(block => {
+        acciones.push({
+            descripcion: block.querySelector(".accion-desc").value.trim(),
+            responsable: block.querySelector(".accion-resp").value.trim(),
+            fechaLimite: block.querySelector(".accion-fecha").value,
+            estado: block.querySelector(".accion-estado").value
+        });
+    });
+    payload.numAcciones = acciones.length;
+    payload.acciones = acciones;
+    payload.observaciones = document.getElementById("observaciones").value.trim();
+
+    return payload;
+}
+
+function handleSubmit(e) {
+    e.preventDefault();
+    lastPayload = buildPayload();
+    sendPayload();
+}
+
+async function sendPayload() {
+    setState("sending");
+
+    if (CONFIG.endpoint === "[PENDIENTE]") {
+        console.log("Payload autoauditoría:", JSON.stringify(lastPayload, null, 2));
+        setTimeout(() => { setState("success"); showSuccessDetails(); }, 1000);
+        return;
+    }
+
+    try {
+        const res = await fetch(CONFIG.endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(lastPayload)
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        setState("success");
+        showSuccessDetails();
+    } catch (err) {
+        console.error("Error enviando autoauditoría:", err);
+        setState("error");
+    }
+}
+
+function retrySend() { sendPayload(); }
+
+function setState(state) {
+    document.getElementById("formView").classList.toggle("hidden", state === "success");
+    document.getElementById("sendingView").classList.toggle("hidden", state !== "sending");
+    document.getElementById("successView").classList.toggle("hidden", state !== "success");
+    document.getElementById("errorView").classList.toggle("hidden", state !== "error");
+}
+
+function showSuccessDetails() {
+    const p = lastPayload;
+    document.getElementById("successDetails").innerHTML =
+        "<p><strong>Zona:</strong> " + escapeHtml(p.zona) + "</p>" +
+        "<p><strong>Fecha:</strong> " + p.fecha + "</p>" +
+        "<p><strong>Cumplimiento:</strong> " + p.numSi + " de 6 cumplidas</p>";
+}
+
+init();
+</script>
+</body>
+</html>
