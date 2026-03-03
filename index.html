@@ -361,7 +361,7 @@ function handleSubmit(e) {
 async function sendPayload() {
     setState("sending");
 
-    if (CONFIG.endpoint === "[PENDIENTE]") {
+    if (CONFIG.endpoint === "https://default4219abae8d5243a1b52a7bb8c1c61d.0d.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a3a8d063fc6740f79ffe457e4ec203b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SezhYqd0DtiG-_RNklZdd_lhguihjWganPmxQtQNk50") {
         console.log("Payload autoauditoría:", JSON.stringify(lastPayload, null, 2));
         setTimeout(() => { setState("success"); showSuccessDetails(); }, 1000);
         return;
@@ -403,3 +403,4 @@ init();
 </script>
 </body>
 </html>
+
